@@ -10,9 +10,8 @@ import XCTest
 
 class TestNisumTests: XCTestCase {
 
-    weak var view: HomeViewProtocol?
     var interactor: HomeInteractorProtocol?
-    var router: HomeRouterProtocol?
+    var repository = AcromineRestRepository()
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -22,18 +21,24 @@ class TestNisumTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    func viewDidload(searchText: String) {
+    func testFetchDefinition() throws {
+        self.interactor = HomeInteractor(repository: repository)
+        let expectation = XCTestExpectation(description: "")
+
         self.interactor?.fetchDefinition(forAcromine: "CTO") {(response) in
             switch response {
             case .success(let acromines):
-                guard let resultAcromines = acromines[0], !resultAcromines.lfs.isEmpty else {
+                guard let resultAcromines = acromines.first, !resultAcromines.lfs.isEmpty else {
                     XCTAssertFalse(false, "Results Empty")
                     return
                 }
                 XCTAssert(true, "Results success")
             case .failure(let error):
-                XCTAssertFalse(false, "Not Results")            }
+                XCTAssertFalse(false, "Not Results")
+            }
+            expectation.fulfill()
         }
+        wait(for: [expectation], timeout: 10.0)
     }
 
     func testPerformanceExample() throws {
